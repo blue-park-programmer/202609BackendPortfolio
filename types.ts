@@ -19,9 +19,16 @@ export interface MainProject {
   storeUrl?: string;
   githubUrl?: string;
   demoUrl?: string;
+  documentUrl?: string;
   techStack?: string[];
   troubleshooting?: string[];
   implementation?: string[];
+  learnings?: string[];
+  performanceResults?: {
+    label: string;
+    value: string;
+    delta: string;
+  }[];
 }
 
 export interface Skill {

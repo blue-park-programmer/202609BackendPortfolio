@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { MAIN_PROJECTS, OTHER_PROJECTS } from '../constants';
 
@@ -7,6 +7,7 @@ const ProjectDetail: React.FC = () => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const origin = queryParams.get('origin');
+    const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
 
     // Find project in both lists
     const project = [...MAIN_PROJECTS, ...OTHER_PROJECTS].find(p => p.id === id);
@@ -27,7 +28,7 @@ const ProjectDetail: React.FC = () => {
     const isMainOrigin = origin === 'main';
 
     return (
-        <div className="bg-background min-h-screen flex flex-col relative pb-32">
+        <div className="bg-background min-h-screen flex flex-col relative pb-28 sm:pb-0">
             {/* Header / Hero Illustration Area */}
             <div className="h-72 bg-slate-200 relative overflow-hidden flex items-end justify-center">
                 <Link
@@ -79,9 +80,9 @@ const ProjectDetail: React.FC = () => {
             </div>
 
             <div className="px-6 py-10 space-y-10">
-                {/* Tech Stack */}
+                {/* Core Technologies */}
                 <section>
-                    <h3 className="text-[17px] font-bold text-slate-900 mb-4 tracking-tight">Tech Stack</h3>
+                    <h3 className="text-[17px] font-bold text-slate-900 mb-4 tracking-tight">핵심 기술</h3>
                     <div className="flex flex-wrap gap-2">
                         {'technologies' in project ? (project as any).technologies.map((tech: any) => (
                             <span
@@ -155,10 +156,39 @@ const ProjectDetail: React.FC = () => {
                     </section>
                 )}
 
+                {'performanceResults' in project && (project as any).performanceResults && (
+                    <section>
+                        <h3 className="text-[17px] font-bold text-slate-900 mb-4 tracking-tight">성능 개선 결과</h3>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                            {(project as any).performanceResults.map((result: any) => (
+                                <div key={result.label} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">{result.label}</p>
+                                    <p className="mt-2 text-[15px] font-bold leading-snug text-slate-900">{result.value}</p>
+                                    <p className="mt-2 text-sm font-extrabold text-primary">{result.delta}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
+                {'learnings' in project && (project as any).learnings && (
+                    <section>
+                        <h3 className="text-[17px] font-bold text-slate-900 mb-4 tracking-tight">배운 점</h3>
+                        <ul className="space-y-3">
+                            {(project as any).learnings.map((learning: string, idx: number) => (
+                                <li key={idx} className="flex gap-3">
+                                    <span className="material-icons-round text-primary text-sm mt-0.5">lightbulb</span>
+                                    <p className="text-slate-500 text-sm leading-relaxed">{learning}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+
                 {/* Implementation (Main Projects) */}
                 {'implementation' in project && (project as any).implementation && (
                     <section>
-                        <h3 className="text-[17px] font-bold text-slate-900 mb-4 tracking-tight">구현 주요 경험</h3>
+                        <h3 className="text-[17px] font-bold text-slate-900 mb-4 tracking-tight">주요 구현 경험</h3>
                         <ul className="space-y-3">
                             {(project as any).implementation.map((exp: string, idx: number) => (
                                 <li key={idx} className="flex gap-3">
@@ -185,17 +215,23 @@ const ProjectDetail: React.FC = () => {
                     </section>
                 )}
 
-                {/* Screenshots */}
+                {/* Project Materials */}
                 <section className="pb-10">
-                    <h3 className="text-[17px] font-bold text-slate-900 mb-5 tracking-tight">Screenshots</h3>
-                    <div className="flex overflow-x-auto gap-4 no-scrollbar -mx-6 px-6">
+                    <h3 className="text-[17px] font-bold text-slate-900 mb-5 tracking-tight">프로젝트 자료</h3>
+                    <div className="space-y-5">
                         {'screenshots' in project && (project as any).screenshots?.length > 0 ? (project as any).screenshots.map((ss: string, idx: number) => (
-                            <div key={idx} className="h-80 min-w-[200px] flex-shrink-0 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center p-2">
-                                <img src={ss} alt={`Screenshot ${idx + 1}`} className="max-h-full max-w-full w-auto object-contain rounded-xl" />
-                            </div>
+                            <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setSelectedScreenshot(ss)}
+                                className="w-full rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-sm p-2 active:scale-[0.99] transition-transform"
+                                aria-label={`프로젝트 자료 ${idx + 1} 확대 보기`}
+                            >
+                                <img src={ss} alt={`프로젝트 자료 ${idx + 1}`} className="w-full h-auto object-contain rounded-xl" />
+                            </button>
                         )) : (
-                            <div className="h-80 min-w-[200px] aspect-[9/18] rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-xs italic border border-dashed border-slate-300">
-                                Screenshots coming soon
+                            <div className="h-80 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-xs italic border border-dashed border-slate-300">
+                                프로젝트 자료 준비 중
                             </div>
                         )}
                     </div>
@@ -204,13 +240,13 @@ const ProjectDetail: React.FC = () => {
 
             {/* Bottom Bar */}
             {isMainOrigin && 'githubUrl' in project && (project as any).githubUrl && 'demoUrl' in project && (project as any).demoUrl ? (
-                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-6 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
-                    <div className="grid grid-cols-2 gap-3">
+                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-4 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50 sm:static sm:mb-8 sm:bg-transparent sm:shadow-none sm:py-0">
+                    <div className="grid grid-cols-2 gap-3 sm:flex sm:justify-center sm:gap-6">
                         <a
                             href={(project as any).githubUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 text-white font-bold py-3 uppercase tracking-widest text-[11px] active:scale-95 transition-transform bg-primary/20 rounded-xl"
+                            className="flex items-center justify-center gap-2 px-3 py-3 text-white font-bold uppercase tracking-widest text-[11px] active:scale-95 transition-transform bg-primary/20 rounded-xl sm:bg-slate-900 sm:px-8 sm:min-w-36"
                         >
                             <span className="material-icons-round text-lg">code</span>
                             Github
@@ -219,48 +255,70 @@ const ProjectDetail: React.FC = () => {
                             href={(project as any).demoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 text-white font-bold py-3 uppercase tracking-widest text-[11px] active:scale-95 transition-transform bg-white/10 rounded-xl"
+                            className="flex items-center justify-center gap-2 px-3 py-3 text-white font-bold uppercase tracking-widest text-[11px] active:scale-95 transition-transform bg-white/10 rounded-xl sm:bg-slate-800 sm:px-8 sm:min-w-36"
                         >
                             <span className="material-icons-round text-lg">play_circle</span>
                             Demo
                         </a>
                     </div>
                 </div>
+            ) : isMainOrigin && 'githubUrl' in project && (project as any).githubUrl && 'documentUrl' in project && (project as any).documentUrl ? (
+                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-4 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50 sm:static sm:mb-8 sm:bg-transparent sm:shadow-none sm:py-0">
+                    <div className="grid grid-cols-2 gap-3 sm:flex sm:justify-center sm:gap-6">
+                        <a
+                            href={(project as any).githubUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 px-3 py-3 text-white font-bold uppercase tracking-widest text-[11px] active:scale-95 transition-transform bg-primary/20 rounded-xl sm:bg-slate-900 sm:px-8 sm:min-w-36"
+                        >
+                            <span className="material-icons-round text-lg">code</span>
+                            Github
+                        </a>
+                        <a
+                            href={(project as any).documentUrl}
+                            download
+                            className="flex items-center justify-center gap-2 px-3 py-3 text-white font-bold uppercase tracking-widest text-[11px] active:scale-95 transition-transform bg-white/10 rounded-xl sm:bg-slate-800 sm:px-8 sm:min-w-36"
+                        >
+                            <span className="material-icons-round text-lg">download</span>
+                            PDF
+                        </a>
+                    </div>
+                </div>
             ) : isMainOrigin && 'githubUrl' in project && (project as any).githubUrl ? (
-                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-6 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
+                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-4 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50 sm:static sm:mb-8 sm:bg-transparent sm:shadow-none sm:py-0 sm:flex sm:justify-center">
                     <a
                         href={(project as any).githubUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 uppercase tracking-widest text-xs active:scale-95 transition-transform bg-primary/20 rounded-xl"
+                        className="w-full flex items-center justify-center gap-2 px-3 py-3 text-white font-bold uppercase tracking-widest text-xs active:scale-95 transition-transform bg-primary/20 rounded-xl sm:w-auto sm:bg-slate-900 sm:px-8 sm:min-w-36"
                     >
                         <span className="material-icons-round text-lg">code</span>
-                        View on Github
+                        Github
                     </a>
                 </div>
             ) : isMainOrigin && 'storeUrl' in project && (project as any).storeUrl ? (
-                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-6 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
+                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-4 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50 sm:static sm:mb-8 sm:bg-transparent sm:shadow-none sm:py-0">
                     <a
                         href={(project as any).storeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 uppercase tracking-widest text-xs active:scale-95 transition-transform bg-primary/20 rounded-xl"
+                        className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 uppercase tracking-widest text-xs active:scale-95 transition-transform bg-primary/20 rounded-xl sm:bg-slate-900"
                     >
                         <span className="material-icons-round text-lg">shop</span>
-                        View on Google Store
+                        Google Store
                     </a>
                 </div>
             ) : !isMainOrigin ? (
-                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-6 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50">
+                <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-6 py-4 bg-slate-900 shadow-[0_-10px_30px_rgba(0,0,0,0.1)] z-50 sm:static sm:mb-8 sm:bg-transparent sm:shadow-none sm:py-0">
                     {'githubUrl' in project && (project as any).githubUrl ? (
                         <a
                             href={(project as any).githubUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 uppercase tracking-widest text-xs active:scale-95 transition-transform bg-white/10 rounded-xl hover:bg-white/20"
+                            className="w-full flex items-center justify-center gap-2 text-white font-bold py-3 uppercase tracking-widest text-xs active:scale-95 transition-transform bg-white/10 rounded-xl hover:bg-white/20 sm:bg-slate-900"
                         >
                             <span className="material-icons-round text-lg">code</span>
-                            View on Github
+                            Github
                         </a>
                     ) : (
                         <button className="w-full flex items-center justify-center gap-2 text-slate-500 font-bold py-3 uppercase tracking-widest text-xs active:scale-95 transition-transform bg-white/5 rounded-xl cursor-not-allowed">
@@ -270,6 +328,19 @@ const ProjectDetail: React.FC = () => {
                     )}
                 </div>
             ) : null}
+
+            {selectedScreenshot && (
+                <div className="fixed inset-0 z-[60] bg-slate-950/80 p-4 flex items-center justify-center" onClick={() => setSelectedScreenshot(null)}>
+                    <button
+                        type="button"
+                        className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center"
+                        aria-label="확대 이미지 닫기"
+                    >
+                        <span className="material-icons-round">close</span>
+                    </button>
+                    <img src={selectedScreenshot} alt="확대된 프로젝트 자료" className="max-h-full max-w-full rounded-2xl object-contain bg-white" />
+                </div>
+            )}
         </div>
     );
 };

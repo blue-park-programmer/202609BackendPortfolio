@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
+import Proficiency from './components/Proficiency';
 import MainProjects from './components/MainProjects';
 import Expertise from './components/Expertise';
 import OtherProjects from './components/OtherProjects';
@@ -25,6 +26,7 @@ const Home: React.FC = () => {
             <Header />
             <main className="relative z-10">
                 <Hero />
+                <Proficiency />
                 <MainProjects />
                 <Expertise />
                 <OtherProjects />
